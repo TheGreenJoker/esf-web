@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0e131f;
+            color: #e1e1e1;
+        }
+        
+        .header-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .card {
+            background: linear-gradient(145deg, #1a2138, #111827);
+            border: 1px solid #2d3748;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        
+        .resource-item {
+            border-left: 3px solid #4299e1;
+            transition: all 0.2s ease;
+        }
+
+        .kill-item {
+            border-left: 3px solid #f56565;
+            transition: all 0.2s ease;
+        }
+        
+        .loader {
+            border: 3px solid #2d3748;
+            border-top: 3px solid #4299e1;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .security-high {
+            background-color: rgba(72, 187, 120, 0.1);
+            border-left: 4px solid #48bb78;
+        }
+        
+        .security-medium {
+            background-color: rgba(246, 173, 85, 0.1);
+            border-left: 4px solid #f6ad55;
+        }
+        
+        .security-low {
+            background-color: rgba(245, 101, 101, 0.1);
+            border-left: 4px solid #f56565;
+        }
+
+        .scrollable-container {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4299e1 #2d3748;
+        }
+
+        .scrollable-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scrollable-container::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 10px;
+        }
+
+        .scrollable-container::-webkit-scrollbar-thumb {
+            background-color: #4299e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Barre de recherche -->
+        <div class="mb-6">
+            <form action="system.html" method="GET" class="flex">
+                <input 
+                    type="text" 
+                    name="system_name" 
+                    placeholder="System Name (ex: Jita)" 
+                    class="flex-grow p-2 rounded-l-lg border border-gray-600 bg-gray-800 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                >
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- État de chargement -->
+        <div id="loading-state" class="text-center py-20">
+            <div class="loader"></div>
+            <p class="mt-4 text-gray-400">Loading system data...</p>
+        </div>
+
+        <!-- Contenu principal -->
+        <div id="content" style="display: none;">
+            <header class="mb-10">
+                <h1 id="system-name-header" class="header-font text-3xl md:text-4xl font-bold text-blue-300 mb-2">Hadaugago</h1>
+                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-400">
+                    <span><i class="fas fa-globe mr-1"></i> System ID: <span id="system-id" class="ml-1 font-medium">30012547</span></span>
+                    <span><i class="fas fa-map-marker-alt mr-1"></i> Region: <span id="region" class="ml-1 font-medium">Heimatar</span></span>
+                    <span><i class="fas fa-shield-alt mr-1"></i> Security: <span id="security" class="ml-1 font-medium px-2 py-1 rounded-full">0.9</span></span>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Carte Stations -->
+                <div class="card rounded-lg p-6">
+                    <h2 class="header-font text-xl font-semibold mb-4 text-blue-300 flex items-center">
+                        <i class="fas fa-space-station mr-2"></i> Stations
+                    </h2>
+                    <div id="stations-info" class="scrollable-container space-y-3 pr-2">
+                        <!-- Rempli dynamiquement -->
+                    </div>
+                </div>
+
+                <!-- Carte Zone -->
+                <div class="card rounded-lg p-6">
+                    <h2 class="header-font text-xl font-semibold mb-4 text-blue-300 flex items-center">
+                        <i class="fas fa-map-marked-alt mr-2"></i> Zone
+                    </h2>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="text-gray-400 block">Zone Type:</span>
+                            <span id="zone-type" class="text-lg">New Eden</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400 block">Constellation:</span>
+                            <span id="constellation" class="text-lg">Sveipar</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carte Sécurité -->
+                <div class="card rounded-lg p-6">
+                    <h2 class="header-font text-xl font-semibold mb-4 text-blue-300 flex items-center">
+                        <i class="fas fa-shield-alt mr-2"></i> Security
+                    </h2>
+                    <div class="flex items-center justify-between">
+                        <div id="security-value" class="text-5xl font-bold">0.9</div>
+                        <div class="relative w-24 h-24">
+                            <svg class="w-full h-full" viewBox="0 0 36 36">
+                                <path
+                                    d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke="#2d3748"
+                                    stroke-width="3"
+                                />
+                                <path
+                                    d="M18 2.0845
+                                        a 15.9155 15.9155 0 0 1 0 31.831
+                                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke="#4299e1"
+                                    stroke-width="3"
+                                    stroke-dasharray="90, 100"
+                                    id="security-meter"
+                                />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-xs font-semibold">
+                                    <span id="security-label">High Sec</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Ressources -->
+            <div class="card rounded-lg p-6 mb-6">
+                <h2 class="header-font text-2xl font-semibold mb-4 text-blue-300 border-b border-gray-700 pb-2 flex items-center">
+                    <i class="fas fa-gem mr-2"></i> Resources
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="header-font text-lg font-semibold mb-3 text-blue-300">Asteroid Belts</h3>
+                        <div class="scrollable-container space-y-2 pr-2" id="asteroid-belts">
+                            <!-- Rempli dynamiquement -->
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="header-font text-lg font-semibold mb-3 text-blue-300">Available Minerals</h3>
+                        <div class="flex flex-wrap gap-2" id="minerals-list">
+                            <!-- Rempli dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Kills -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card rounded-lg p-6">
+                    <h2 class="header-font text-2xl font-semibold mb-4 text-blue-300 border-b border-gray-700 pb-2 flex items-center">
+                        <i class="fas fa-skull mr-2"></i> Today Kills Stats
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800 p-3 rounded-lg">
+                            <div class="text-sm text-gray-400">NPC Killed</div>
+                            <div id="npc-kills" class="text-2xl font-bold text-red-400">0</div>
+                        </div>
+                        <div class="bg-gray-800 p-3 rounded-lg">
+                            <div class="text-sm text-gray-400">Ship Destroyed</div>
+                            <div id="ship-kills" class="text-2xl font-bold text-yellow-400">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card rounded-lg p-6">
+                    <h2 class="header-font text-2xl font-semibold mb-4 text-blue-300 border-b border-gray-700 pb-2 flex items-center">
+                        <i class="fas fa-crosshairs mr-2"></i> Recent Kills
+                    </h2>
+                    <div id="top-kills" class="scrollable-container space-y-3">
+                        <!-- Rempli dynamiquement -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Activity -->
+            <div class="card rounded-lg p-6 mb-6">
+                <h2 class="header-font text-2xl font-semibold mb-4 text-blue-300 border-b border-gray-700 pb-2 flex items-center">
+                    <i class="fas fa-chart-line mr-2"></i> Activity Recommendations
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Mining Activity -->
+                    <div>
+                        <h3 class="header-font text-lg font-semibold mb-2 text-blue-300">
+                            <i class="fas fa-digging mr-2"></i> Mining
+                        </h3>
+                        <div class="flex justify-between mb-1">
+                            <span>Score:</span>
+                            <span id="mining-score-value">3/5</span>
+                        </div>
+                        <div class="activity-bar" id="mining-bar">
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exploration Activity -->
+                    <div>
+                        <h3 class="header-font text-lg font-semibold mb-2 text-blue-300">
+                            <i class="fas fa-binoculars mr-2"></i> Exploration
+                        </h3>
+                        <div class="flex justify-between mb-1">
+                            <span>Score:</span>
+                            <span id="exploration-score-value">4/5</span>
+                        </div>
+                        <div class="activity-bar" id="exploration-bar">
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                        </div>
+                    </div>
+
+                    <!-- PvP Activity -->
+                    <div>
+                        <h3 class="header-font text-lg font-semibold mb-2 text-blue-300">
+                            <i class="fas fa-crosshairs mr-2"></i> PvP
+                        </h3>
+                        <div class="flex justify-between mb-1">
+                            <span>Score:</span>
+                            <span id="pvp-score-value">2/5</span>
+                        </div>
+                        <div class="activity-bar" id="pvp-bar">
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                        </div>
+                    </div>
+
+                    <!-- PvE Activity -->
+                    <div>
+                        <h3 class="header-font text-lg font-semibold mb-2 text-blue-300">
+                            <i class="fas fa-robot mr-2"></i> PvE
+                        </h3>
+                        <div class="flex justify-between mb-1">
+                            <span>Score:</span>
+                            <span id="pve-score-value">3/5</span>
+                        </div>
+                        <div class="activity-bar" id="pve-bar">
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                            <div class="activity-segment"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- État d'erreur -->
+            <div id="error-state" class="text-center py-20" style="display: none;">
+                <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+                <h2 class="text-xl font-bold text-red-400">Erreur de chargement</h2>
+                <p class="text-gray-400 mt-2" id="error-message"></p>
+                <button onclick="window.location.reload()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <i class="fas fa-sync-alt mr-2"></i> Réessayer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fonction fetch avec timeout de 10 secondes
+        async function fetchWithTimeout(resource, options = {}) {
+            const { timeout = 10000 } = options;
+            
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            
+            const response = await fetch(resource, {
+                ...options,
+                signal: controller.signal  
+            });
+            
+            clearTimeout(id);
+            return response;
+        }
+
+        // Formatage du niveau de sécurité
+        function formatSecurity(security) {
+            const securityValue = parseFloat(security);
+            
+            if (securityValue >= 0.5) {
+                return {
+                    badgeClass: 'bg-green-800 text-green-200',
+                    label: 'High Sec',
+                    meterColor: '#48bb78'
+                };
+            } else if (securityValue >= 0.0) {
+                return {
+                    badgeClass: 'bg-yellow-800 text-yellow-200',
+                    label: 'Low Sec',
+                    meterColor: '#f6ad55'
+                };
+            } else {
+                return {
+                    badgeClass: 'bg-red-800 text-red-200',
+                    label: 'Null Sec',
+                    meterColor: '#f56565'
+                };
+            }
+        }
+
+        function updateActivityBar(score, elementId) {
+            const bar = document.getElementById(elementId);
+            const segments = bar.querySelectorAll('.activity-segment');
+            
+            // Reset all segments
+            segments.forEach(seg => seg.classList.remove('active'));
+            
+            // Activate segments based on score
+            for (let i = 0; i < score; i++) {
+                if (segments[i]) {
+                    segments[i].classList.add('active');
+                }
+            }
+        }
+
+        // Affichage des données
+        function displaySystemData(data) {
+            // Header
+            document.getElementById('system-name-header').textContent = data.system_name;
+            document.getElementById('system-id').textContent = data.system_id;
+            document.getElementById('region').textContent = data.region;
+            
+            // Sécurité
+            const security = formatSecurity(data.security);
+            document.getElementById('security').textContent = data.security.toFixed(1);
+            document.getElementById('security').className = `ml-1 font-medium px-2 py-1 rounded-full ${security.badgeClass}`;
+            document.getElementById('security-value').textContent = data.security.toFixed(1);
+            document.getElementById('security-label').textContent = security.label;
+            document.getElementById('security-meter').style.stroke = security.meterColor;
+            
+            // Pourcentage de sécurité
+            const securityPercentage = Math.min(Math.max(data.security, 0), 1) * 100;
+            const dashOffset = 100 - securityPercentage;
+            document.getElementById('security-meter').style.strokeDashoffset = dashOffset;
+            
+            // Stations
+            const stationsInfo = document.getElementById('stations-info');
+            if (data.stations && data.stations.length > 0) {
+                stationsInfo.innerHTML = data.stations.map(station => `
+                    <div class="resource-item px-4 py-2 rounded bg-gray-800">
+                        <div class="font-medium">${station.owner}</div>
+                        <div class="text-sm text-gray-400">${station.type}</div>
+                    </div>
+                `).join('');
+            } else {
+                stationsInfo.innerHTML = '<div class="text-center py-4 text-yellow-500">No station (login to see structure like fortizar)</div>';
+            }
+            
+            // Zone
+            document.getElementById('zone-type').textContent = data.zone_type || 'N/A';
+            document.getElementById('constellation').textContent = data.constellation || 'N/A';
+            
+            // Asteroid Belts
+            const beltsContainer = document.getElementById('asteroid-belts');
+            if (data.resources && data.resources[0].length > 0) {
+                beltsContainer.innerHTML = data.resources[0].map(belt => `
+                    <div class="resource-item px-4 py-2 rounded bg-gray-800">
+                        <span class="font-medium">${belt}</span>
+                    </div>
+                `).join('');
+            } else {
+                beltsContainer.innerHTML = '<div class="text-center py-4 text-yellow-500">No belt in this system</div>';
+            }
+            
+            // Minerals
+            const mineralsContainer = document.getElementById('minerals-list');
+            if (data.resources && data.resources[1] && data.resources[1][0]) {
+                mineralsContainer.innerHTML = data.resources[1][0].map(mineral => `
+                    <span class="px-3 py-1 bg-gray-700 rounded-full text-sm">${mineral}</span>
+                `).join('');
+            } else {
+                mineralsContainer.innerHTML = '<div class="text-sm text-yellow-500">No minerals</div>';
+            }
+            
+            // Kills
+            if (data.kills) {
+                document.getElementById('npc-kills').textContent = data.kills.npc_kills || '0';
+                document.getElementById('ship-kills').textContent = data.kills.ship_kills || '0';
+            }
+            
+            // Top Kills
+            const topKillsContainer = document.getElementById('top-kills');
+            if (data.top_kills && data.top_kills.length > 0) {
+                topKillsContainer.innerHTML = data.top_kills.map(kill => `
+                    <div class="kill-item px-4 py-2 rounded bg-gray-800">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="font-medium">Victim: <a href="${kill.url}" class="text-blue-400 hover:text-blue-300" target="_blank" rel="noopener noreferrer">${kill.victim}</a></div>
+                                <div class="text-sm text-gray-400">Main Attacker: ${kill.main_attacker}</div>
+                            </div>
+                            <div class="text-sm text-gray-500">${kill.time}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                topKillsContainer.innerHTML = '<div class="text-center py-4 text-yellow-500">Aucun kill récent</div>';
+            }
+
+            // Activity Scores
+            if (data.recomendations && data.recomendations.length === 4) {
+                const [miningScore, explorationScore, pvpScore, pveScore] = data.recomendations;
+
+                // Mining
+                document.getElementById('mining-score-value').textContent = `${miningScore}/5`;
+                updateActivityBar(miningScore, 'mining-bar');
+
+                // Exploration
+                document.getElementById('exploration-score-value').textContent = `${explorationScore}/5`;
+                updateActivityBar(explorationScore, 'exploration-bar');
+
+                // PvP
+                document.getElementById('pvp-score-value').textContent = `${pvpScore}/5`;
+                updateActivityBar(pvpScore, 'pvp-bar');
+
+                // PvE
+                document.getElementById('pve-score-value').textContent = `${pveScore}/5`;
+                updateActivityBar(pveScore, 'pve-bar');
+            }
+
+            // Afficher le contenu
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }
+
+        // Gestion des erreurs
+        function displayError(message) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-state').style.display = 'block';
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const systemName = urlParams.get('system_name');
+            
+            if (!systemName) {
+                return displayError('Aucun système spécifié dans l\'URL');
+            }
+            
+            try {
+                const response = await fetchWithTimeout(`http://127.0.0.1:5000/system/${systemName}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur serveur: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displaySystemData(data);
+                
+            } catch (error) {
+                let errorMessage = "Erreur lors du chargement des données";
+                
+                if (error.name === "AbortError") {
+                    errorMessage = "La requête a pris trop de temps (plus de 10 secondes)";
+                } else if (error.message.includes("Failed to fetch")) {
+                    errorMessage = "Impossible de se connecter au serveur";
+                } else {
+                    errorMessage = error.message;
+                }
+                
+                displayError(errorMessage);
+            }
+        });
+    </script>
+</body>
+</html>

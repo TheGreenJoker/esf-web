@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #0e131f;
+    color: #e1e1e1;
+}
+
+.header-font {
+    font-family: 'Orbitron', sans-serif;
+}
+
+.card {
+    background: linear-gradient(145deg, #1a2138, #111827);
+    border: 1px solid #2d3748;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.resource-item {
+    border-left: 3px solid #4299e1;
+    transition: all 0.2s ease;
+}
+
+.kill-item {
+    border-left: 3px solid #f56565;
+    transition: all 0.2s ease;
+}
+
+.loader {
+    border: 3px solid #2d3748;
+    border-top: 3px solid #4299e1;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.security-high {
+    background-color: rgba(72, 187, 120, 0.1);
+    border-left: 4px solid #48bb78;
+}
+
+.security-medium {
+    background-color: rgba(246, 173, 85, 0.1);
+    border-left: 4px solid #f6ad55;
+}
+
+.security-low {
+    background-color: rgba(245, 101, 101, 0.1);
+    border-left: 4px solid #f56565;
+}
+
+.scrollable-container {
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #4299e1 #2d3748;
+}
+
+.scrollable-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+    background: #2d3748;
+    border-radius: 10px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+    background-color: #4299e1;
+    border-radius: 10px;
+}
+
+.activity-score-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.activity-label {
+    width: 100px;
+    font-weight: 500;
+}
+
+.activity-bar {
+    display: flex;
+    flex-grow: 1;
+}
+
+.activity-segment {
+    height: 12px;
+    width: 20%;
+    margin-right: 3px;
+    border-radius: 2px;
+}
+
+.active-segment-1 { background-color: #f56565; } /* Red for bad */
+.active-segment-2 { background-color: #ff6932; } /* Orange/Yellow for meh */
+.active-segment-3 { background-color: #ebff52; } /* Green for good */
+.active-segment-4 { background-color: #68d391; } /* Green for good */
+.active-segment-5 { background-color: #0d7e38; } /* Green for good */
+
+.inactive-segment {
+    background-color: #2d3748;
+}
+
+.activity-value {
+    width: 40px;
+    text-align: right;
+    margin-left: 10px;
+}
